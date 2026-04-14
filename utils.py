@@ -2,7 +2,6 @@ OBJECT_EMPTY = None
 OBJECT_HOUSE = "🏠"
 OBJECT_HOSPITAL = "🏥"
 
-
 MOVE_UP = (0, -1)
 MOVE_DOWN = (0, 1)
 MOVE_LEFT = (-1, 0)
@@ -10,120 +9,59 @@ MOVE_RIGHT = (1, 0)
 
 
 def is_free_to_move(map, move):
-    """
-    Check whether a target position is empty and can be moved into.
-
-    Args:
-        map: Matrix (list of lists) representing the board.
-        move: Position as (x, y), where x is horizontal and y is vertical.
-
-    Returns:
-        bool: True if the target cell is empty (None), False otherwise.
-    """
-
-    raise NotImplementedError("is_free_to_move is not implemented yet")
+    x, y = move
+    return map[y][x] == OBJECT_EMPTY
 
 
 def is_valid_move(map, move):
-    """
-    Check whether a position is inside the matrix boundaries.
-
-    Args:
-        map: Matrix (list of lists) representing the board.
-        move: Position as (x, y), where x is horizontal and y is vertical.
-
-    Returns:
-        bool: True if the position is within bounds, False otherwise.
-    """
-
-    raise NotImplementedError("is_valid_move is not implemented yet")
+    x, y = move
+    rows = len(map)
+    cols = len(map[0]) if rows > 0 else 0
+    return 0 <= x < cols and 0 <= y < rows
 
 
 def find_objects(map, target_object_symbol):
-    """
-    Find all coordinates where a given object symbol appears.
-
-    Args:
-        map: Matrix (list of lists) representing the board.
-        target_object_symbol: Symbol to search for (None, 🏠, or 🏥).
-
-    Returns:
-        list[tuple[int, int]]: All matching coordinates as (x, y).
-    """
-
-    raise NotImplementedError("find_objects is not implemented yet")
+    coords = []
+    for y, row in enumerate(map):
+        for x, cell in enumerate(row):
+            if cell == target_object_symbol:
+                coords.append((x, y))
+    return coords
 
 
 def result(map, hospital_coordinates, target_move):
-    """
-    Create and return a new map after moving one hospital to a target position.
-
-    Args:
-        map: Matrix (list of lists) representing the board.
-        hospital_coordinates: Current hospital position as (x, y).
-        target_move: Destination position as (x, y).
-
-    Returns:
-        list[list]: A deep-copied map with the move applied.
-    """
-
-    raise NotImplementedError("result is not implemented yet")
+    import copy
+    new_map = copy.deepcopy(map)
+    hx, hy = hospital_coordinates
+    tx, ty = target_move
+    new_map[hy][hx] = OBJECT_EMPTY
+    if (hx, hy) != (tx, ty):
+        new_map[ty][tx] = OBJECT_HOSPITAL
+    return new_map
 
 
 def manhattan(pos, pos_2):
-    """
-    Compute the Manhattan distance between two coordinates.
-
-    Args:
-        pos: First coordinate as (x, y).
-        pos_2: Second coordinate as (x, y).
-
-    Returns:
-        int: Distance computed as abs(x2 - x1) + abs(y2 - y1).
-    """
-
-    raise NotImplementedError("manhattan is not implemented yet")
+    return abs(pos_2[0] - pos[0]) + abs(pos_2[1] - pos[1])
 
 
 def cost(map):
-    """
-    Compute total cost as the sum of distances from each hospital to each house.
-
-    Args:
-        map: Matrix (list of lists) representing the board.
-
-    Returns:
-        int: Total Manhattan-distance cost.
-    """
-
-    raise NotImplementedError("cost is not implemented yet")
+    hospitals = find_objects(map, OBJECT_HOSPITAL)
+    houses = find_objects(map, OBJECT_HOUSE)
+    total = 0
+    for hospital in hospitals:
+        for house in houses:
+            total += manhattan(hospital, house)
+    return total
 
 
 def move(pos, pos_2):
-    """
-    Add two coordinates component-wise.
-
-    Args:
-        pos: First coordinate as (x, y).
-        pos_2: Second coordinate as (x, y).
-
-    Returns:
-        tuple[int, int]: New coordinate as (x1 + x2, y1 + y2).
-    """
-
-    raise NotImplementedError("move is not implemented yet")
+    return (pos[0] + pos_2[0], pos[1] + pos_2[1])
 
 
 def actions(map, hospital_position):
-    """
-    Return all valid adjacent moves for a hospital in up, down, left, right order.
-
-    Args:
-        map: Matrix (list of lists) representing the board.
-        hospital_position: Hospital coordinate as (x, y).
-
-    Returns:
-        list[tuple[int, int]]: Valid neighboring positions that are in bounds and free.
-    """
-
-    raise NotImplementedError("actions is not implemented yet")
+    valid_actions = []
+    for direction in [MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT]:
+        target = move(hospital_position, direction)
+        if is_valid_move(map, target) and is_free_to_move(map, target):
+            valid_actions.append(target)
+    return valid_actions
